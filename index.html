@@ -3,26 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relativitäts-Zeitdilatation</title>
+    <title>Relativitäts-Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Relativitäts-Zeitdilatation</h1>
 
-    <div class="data-box">
-        <p>Aktuelle Geschwindigkeit: <span id="speed">0</span> km/h</p>
+<div class="container">
+    <h1>Zeitdilatation</h1>
+
+    <div class="card big">
+        <div class="label">Geschwindigkeit</div>
+        <div class="value" id="speed">0.00</div>
+        <div class="unit">km/h</div>
     </div>
 
-    <div class="data-box">
-        <p>Zeitdifferenz (Δt) für dich: <span id="deltaTime">0</span> s</p>
+    <div class="card">
+        <div class="label">Δt pro Sekunde</div>
+        <div class="value small" id="deltaTime">0.00e+0</div>
+        <div class="unit">Sekunden</div>
     </div>
 
-    <div class="data-box">
-        <p>Kumulative verlorene Zeit: <span id="totalTime">0</span> s</p>
+    <div class="card">
+        <div class="label">Kumulative Zeitdifferenz</div>
+        <div class="value small" id="totalTime">0.00e+0</div>
+        <div class="unit">Sekunden</div>
     </div>
 
     <button id="resetBtn">Reset</button>
+</div>
 
-    <script src="js/script.js"></script>
+<script src="js/script.js"></script>
 </body>
 </html>
