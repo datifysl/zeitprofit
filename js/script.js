@@ -1,6 +1,7 @@
 const c = 299792458; // Lichtgeschwindigkeit m/s
 
-let totalExponent = null; // Exponent der kumulierten Zeit
+let totalMantissa = 0;
+let totalExponent = null;
 let lastTimestamp = null;
 
 const speedDisplay = document.getElementById("speed");
@@ -20,14 +21,15 @@ function formatScientific(mantissa, exponent) {
 }
 
 // ---------- Anzeige ----------
-function updateDisplay(speed, deltaMantissa, deltaExp, totalMantissa, totalExp) {
+function updateDisplay(speed, deltaMant, deltaExp, totalMant, totalExp) {
     speedDisplay.textContent = speed.toFixed(2);
-    deltaTimeDisplay.textContent = formatScientific(deltaMantissa, deltaExp);
-    totalTimeDisplay.textContent = formatScientific(totalMantissa, totalExp);
+    deltaTimeDisplay.textContent = formatScientific(deltaMant, deltaExp);
+    totalTimeDisplay.textContent = formatScientific(totalMant, totalExp);
 }
 
 // ---------- Reset ----------
 resetBtn.addEventListener("click", () => {
+    totalMantissa = 0;
     totalExponent = null;
     lastTimestamp = null;
     updateDisplay(0, 0, 0, 0, 0);
@@ -39,25 +41,31 @@ if ("geolocation" in navigator) {
 
         const timestamp = position.timestamp;
         let speedMS = position.coords.speed;
-        if (speedMS === null || speedMS === 0) speedMS = 0.388; // 1,4 km/h
+
+        // Nur echte GPS-Werte nutzen, sonst 0
+        if (speedMS === null) speedMS = 0;
 
         const speedKMH = speedMS * 3.6;
+
+        // Minimalbewegung sichtbar machen (z.B. GPS-Noise > 0)
+        const MIN_SPEED = 0.01; // 0.036 km/h
+        if (speedMS > 0 && speedMS < MIN_SPEED) speedMS = MIN_SPEED;
 
         // Δt pro Sekunde ~ v^2 / (2c^2) nur Exponent berechnen
         const deltaRaw = (speedMS*speedMS)/(2*c*c);
         const deltaExp = Math.floor(Math.log10(deltaRaw));
         const deltaMant = deltaRaw / Math.pow(10, deltaExp);
 
-        // Kumulative Zeit in Exponenten hochzählen
+        // Kumulative Zeit hochzählen
         if (lastTimestamp) {
             const dt = (timestamp - lastTimestamp) / 1000; // Sekunden seit letztem Update
-            let totalRaw = deltaMant * Math.pow(10, deltaExp) * dt;
+            const deltaTotal = deltaMant * Math.pow(10, deltaExp) * dt;
 
             if (totalExponent === null) {
-                totalExponent = Math.floor(Math.log10(totalRaw));
-                totalMantissa = totalRaw / Math.pow(10, totalExponent);
+                totalExponent = Math.floor(Math.log10(deltaTotal));
+                totalMantissa = deltaTotal / Math.pow(10, totalExponent);
             } else {
-                let newTotal = totalMantissa * Math.pow(10, totalExponent) + totalRaw;
+                let newTotal = totalMantissa * Math.pow(10, totalExponent) + deltaTotal;
                 totalExponent = Math.floor(Math.log10(newTotal));
                 totalMantissa = newTotal / Math.pow(10, totalExponent);
             }
