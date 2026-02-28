@@ -12,18 +12,22 @@ const resetBtn = document.getElementById("resetBtn");
 
 function toSuperscript(num) {
     const map = {
-        "-": "⁻",
-        "0": "⁰","1": "¹","2": "²","3": "³","4": "⁴",
+        "-": "⁻","0": "⁰","1": "¹","2": "²","3": "³","4": "⁴",
         "5": "⁵","6": "⁶","7": "⁷","8": "⁸","9": "⁹"
     };
     return String(num).split("").map(c => map[c]).join("");
 }
 
-function formatScientific(value, digits = 3) {
+function formatScientific(value) {
     if (value === 0) return "0 × 10⁰";
 
     const exponent = Math.floor(Math.log10(Math.abs(value)));
     const mantissa = value / Math.pow(10, exponent);
+
+    // Je kleiner der Wert, desto mehr Nachkommastellen
+    let digits = 3;
+    if (Math.abs(value) < 1e-10) digits = 6;
+    if (Math.abs(value) < 1e-15) digits = 8;
 
     return mantissa.toFixed(digits) + " × 10" + toSuperscript(exponent);
 }
