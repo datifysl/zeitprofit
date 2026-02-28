@@ -1,32 +1,71 @@
 body {
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
-    color: #333;
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    padding: 20px;
+    height: 100vh;
 }
 
-h1 { margin-bottom: 10px; }
-
-.data-box {
-    background: #fff;
-    padding: 15px 25px;
-    margin: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    width: 300px;
+.container {
     text-align: center;
+    width: 90%;
+    max-width: 420px;
+}
+
+h1 {
+    margin-bottom: 25px;
+    font-weight: 300;
+    letter-spacing: 2px;
+}
+
+.card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.card.big .value {
+    font-size: 48px;
+}
+
+.value {
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.value.small {
+    font-size: 20px;
+}
+
+.label {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.unit {
+    font-size: 14px;
+    opacity: 0.5;
 }
 
 button {
-    padding: 10px 20px;
-    font-size: 16px;
-    margin-top: 15px;
-    cursor: pointer;
+    margin-top: 20px;
+    padding: 12px 25px;
     border: none;
-    border-radius: 5px;
-    background-color: #007bff;
+    border-radius: 25px;
+    background: #00c6ff;
+    background: linear-gradient(to right, #0072ff, #00c6ff);
     color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
 }
