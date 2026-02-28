@@ -35,29 +35,27 @@ resetBtn.addEventListener("click", () => {
     updateDisplay(0, 0, 0, 0, 0);
 });
 
-// ---------- GPS + Exponenten-Methode ----------
+// ---------- GPS + echte Geschwindigkeit ----------
 if ("geolocation" in navigator) {
     navigator.geolocation.watchPosition(position => {
 
         const timestamp = position.timestamp;
         let speedMS = position.coords.speed;
 
-        // Keine Phantomgeschwindigkeit → echte GPS-Werte nutzen
-        if (speedMS === null) speedMS = 0;
+        // Nur echte GPS-Geschwindigkeit nutzen
+        if (speedMS === null || speedMS <= 0) {
+            // Kein Delta, keine Summierung
+            updateDisplay(0, 0, 0, totalMantissa, totalExponent === null ? 0 : totalExponent);
+            lastTimestamp = timestamp;
+            return;
+        }
 
         const speedKMH = speedMS * 3.6;
 
         // Δt pro Sekunde ~ v^2 / (2c^2)
         const deltaRaw = (speedMS * speedMS) / (2 * c * c);
-        let deltaExp, deltaMant;
-
-        if (deltaRaw === 0) {
-            deltaMant = 0;
-            deltaExp = 0;
-        } else {
-            deltaExp = Math.floor(Math.log10(deltaRaw));
-            deltaMant = deltaRaw / Math.pow(10, deltaExp);
-        }
+        const deltaExp = Math.floor(Math.log10(deltaRaw));
+        const deltaMant = deltaRaw / Math.pow(10, deltaExp);
 
         // Kumulative Zeit hochzählen
         if (lastTimestamp) {
