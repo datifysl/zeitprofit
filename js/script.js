@@ -17,6 +17,8 @@ function toSuperscript(num) {
 
 // ---------- Format als x × 10^n ----------
 function formatScientific(mantissa, exponent) {
+    // Extrem kleine Mantissen runden auf mind. 1e-30, nur für Anzeige
+    if (mantissa === 0) exponent = 0;
     return mantissa.toFixed(3) + " × 10" + toSuperscript(exponent);
 }
 
@@ -35,23 +37,20 @@ resetBtn.addEventListener("click", () => {
     updateDisplay(0, 0, 0, 0, 0);
 });
 
-// ---------- GPS + Exponenten-Methode ----------
+// ---------- GPS + echte Geschwindigkeit ----------
 if ("geolocation" in navigator) {
     navigator.geolocation.watchPosition(position => {
 
         const timestamp = position.timestamp;
-        let speedMS = position.coords.speed;
-
-        // Keine Phantomgeschwindigkeit → echte GPS-Werte nutzen
-        if (speedMS === null) speedMS = 0;
-
+        let speedMS = position.coords.speed || 0; // null → 0
         const speedKMH = speedMS * 3.6;
 
         // Δt pro Sekunde ~ v^2 / (2c^2)
-        const deltaRaw = (speedMS * speedMS) / (2 * c * c);
-        let deltaExp, deltaMant;
+        let deltaRaw = (speedMS * speedMS) / (2 * c * c);
+        let deltaMant, deltaExp;
 
         if (deltaRaw === 0) {
+            // Stillstand: Δt = 0 × 10⁰
             deltaMant = 0;
             deltaExp = 0;
         } else {
@@ -59,25 +58,31 @@ if ("geolocation" in navigator) {
             deltaMant = deltaRaw / Math.pow(10, deltaExp);
         }
 
-        // Kumulative Zeit hochzählen
+        // Kumulative Zeit hochzählen nur bei echter Bewegung
         if (lastTimestamp) {
             const dt = (timestamp - lastTimestamp) / 1000; // Sekunden seit letztem Update
-            const deltaTotal = deltaMant * Math.pow(10, deltaExp) * dt;
 
-            if (totalExponent === null) {
-                totalMantissa = deltaTotal;
-                totalExponent = deltaTotal === 0 ? 0 : Math.floor(Math.log10(deltaTotal));
-            } else {
-                let newTotal = totalMantissa * Math.pow(10, totalExponent) + deltaTotal;
-                totalExponent = newTotal === 0 ? 0 : Math.floor(Math.log10(newTotal));
-                totalMantissa = newTotal / Math.pow(10, totalExponent);
+            if (speedMS > 0) {
+                const deltaTotal = deltaMant * Math.pow(10, deltaExp) * dt;
+
+                if (totalExponent === null) {
+                    totalMantissa = deltaTotal;
+                    totalExponent = deltaTotal === 0 ? 0 : Math.floor(Math.log10(deltaTotal));
+                } else {
+                    const newTotal = totalMantissa * Math.pow(10, totalExponent) + deltaTotal;
+                    totalExponent = newTotal === 0 ? 0 : Math.floor(Math.log10(newTotal));
+                    totalMantissa = newTotal / Math.pow(10, totalExponent);
+                }
             }
         } else {
-            totalMantissa = deltaMant;
-            totalExponent = deltaExp;
+            // Erstes GPS-Update, nur vorbereiten
+            if (speedMS > 0) {
+                totalMantissa = deltaMant;
+                totalExponent = deltaExp;
+            }
         }
 
-        updateDisplay(speedKMH, deltaMant, deltaExp, totalMantissa, totalExponent);
+        updateDisplay(speedKMH, deltaMant, deltaExp, totalMantissa, totalExponent === null ? 0 : totalExponent);
         lastTimestamp = timestamp;
 
     }, () => {
