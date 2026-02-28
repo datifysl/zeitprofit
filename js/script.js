@@ -42,19 +42,22 @@ if ("geolocation" in navigator) {
         const timestamp = position.timestamp;
         let speedMS = position.coords.speed;
 
-        // Nur echte GPS-Werte nutzen, sonst 0
+        // Keine Phantomgeschwindigkeit → echte GPS-Werte nutzen
         if (speedMS === null) speedMS = 0;
 
         const speedKMH = speedMS * 3.6;
 
-        // Minimalbewegung sichtbar machen (z.B. GPS-Noise > 0)
-        const MIN_SPEED = 0.01; // 0.036 km/h
-        if (speedMS > 0 && speedMS < MIN_SPEED) speedMS = MIN_SPEED;
+        // Δt pro Sekunde ~ v^2 / (2c^2)
+        const deltaRaw = (speedMS * speedMS) / (2 * c * c);
+        let deltaExp, deltaMant;
 
-        // Δt pro Sekunde ~ v^2 / (2c^2) nur Exponent berechnen
-        const deltaRaw = (speedMS*speedMS)/(2*c*c);
-        const deltaExp = Math.floor(Math.log10(deltaRaw));
-        const deltaMant = deltaRaw / Math.pow(10, deltaExp);
+        if (deltaRaw === 0) {
+            deltaMant = 0;
+            deltaExp = 0;
+        } else {
+            deltaExp = Math.floor(Math.log10(deltaRaw));
+            deltaMant = deltaRaw / Math.pow(10, deltaExp);
+        }
 
         // Kumulative Zeit hochzählen
         if (lastTimestamp) {
@@ -62,11 +65,11 @@ if ("geolocation" in navigator) {
             const deltaTotal = deltaMant * Math.pow(10, deltaExp) * dt;
 
             if (totalExponent === null) {
-                totalExponent = Math.floor(Math.log10(deltaTotal));
-                totalMantissa = deltaTotal / Math.pow(10, totalExponent);
+                totalMantissa = deltaTotal;
+                totalExponent = deltaTotal === 0 ? 0 : Math.floor(Math.log10(deltaTotal));
             } else {
                 let newTotal = totalMantissa * Math.pow(10, totalExponent) + deltaTotal;
-                totalExponent = Math.floor(Math.log10(newTotal));
+                totalExponent = newTotal === 0 ? 0 : Math.floor(Math.log10(newTotal));
                 totalMantissa = newTotal / Math.pow(10, totalExponent);
             }
         } else {
