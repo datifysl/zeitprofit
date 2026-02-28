@@ -1,4 +1,4 @@
-const c = 299792458; // Lichtgeschwindigkeit m/s
+cconst c = 299792458; // Lichtgeschwindigkeit m/s
 
 let totalMantissa = 0;
 let totalExponent = null;
