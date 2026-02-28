@@ -18,8 +18,7 @@ function toSuperscript(num) {
 }
 
 function formatScientific(value) {
-    // Entferne Rundungs-Null, zeige auch winzige Werte
-    if (Math.abs(value) < 1e-30) value = 1e-30; // minimale sichtbare Zahl
+    if (Math.abs(value) < 1e-30) value = 1e-30; // minimal sichtbarer Wert
 
     const exponent = Math.floor(Math.log10(Math.abs(value)));
     const mantissa = value / Math.pow(10, exponent);
@@ -47,23 +46,26 @@ resetBtn.addEventListener("click", () => {
     updateDisplay(0, 0, 0);
 });
 
-// ---------- GPS + Relativität ----------
+// ---------- GPS + Relativität + Echtzeit-Counter ----------
 if ("geolocation" in navigator) {
     navigator.geolocation.watchPosition(position => {
 
         const timestamp = position.timestamp;
-        // Wenn speed = 0 oder null, nehmen wir minimale Bewegung 1.4 km/h = 0.388 m/s
+
+        // Wenn speed = 0 oder null, minimale Bewegung setzen
         let speedMS = position.coords.speed;
-        if (speedMS === null || speedMS === 0) speedMS = 0.388;
+        if (speedMS === null || speedMS === 0) speedMS = 0.388; // 1,4 km/h
 
         const speedKMH = speedMS * 3.6;
 
+        // Relativistische Zeitdilatation
         const v = speedMS;
         const gamma = 1 / Math.sqrt(1 - (v * v) / (c * c));
         const deltaT = 1 - 1 / gamma;
 
+        // Echtzeit hochzählen
         if (lastTimestamp) {
-            const dt = (timestamp - lastTimestamp) / 1000;
+            const dt = (timestamp - lastTimestamp) / 1000; // Sekunden seit letztem Update
             totalTime += deltaT * dt;
         }
 
