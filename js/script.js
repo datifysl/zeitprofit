@@ -43,3 +43,4 @@ if ("geolocation" in navigator) {
         alert("Standortzugriff fehlgeschlagen.");
     }, { enableHighAccuracy: true });
 }
+
