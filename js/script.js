@@ -9,7 +9,6 @@ const totalTimeDisplay = document.getElementById("totalTime");
 const resetBtn = document.getElementById("resetBtn");
 
 // ---------- Wissenschaftliche Notation ----------
-
 function toSuperscript(num) {
     const map = {
         "-": "⁻","0": "⁰","1": "¹","2": "²","3": "³","4": "⁴",
@@ -19,21 +18,22 @@ function toSuperscript(num) {
 }
 
 function formatScientific(value) {
-    if (value === 0) return "0 × 10⁰";
+    // Entferne Rundungs-Null, zeige auch winzige Werte
+    if (Math.abs(value) < 1e-30) value = 1e-30; // minimale sichtbare Zahl
 
     const exponent = Math.floor(Math.log10(Math.abs(value)));
     const mantissa = value / Math.pow(10, exponent);
 
-    // Je kleiner der Wert, desto mehr Nachkommastellen
+    // Dynamische Nachkommastellen
     let digits = 3;
     if (Math.abs(value) < 1e-10) digits = 6;
     if (Math.abs(value) < 1e-15) digits = 8;
+    if (Math.abs(value) < 1e-20) digits = 10;
 
     return mantissa.toFixed(digits) + " × 10" + toSuperscript(exponent);
 }
 
 // ---------- Anzeige ----------
-
 function updateDisplay(speed, deltaT, totalT) {
     speedDisplay.textContent = speed.toFixed(2);
     deltaTimeDisplay.textContent = formatScientific(deltaT);
@@ -41,7 +41,6 @@ function updateDisplay(speed, deltaT, totalT) {
 }
 
 // ---------- Reset ----------
-
 resetBtn.addEventListener("click", () => {
     totalTime = 0;
     lastTimestamp = null;
@@ -49,12 +48,14 @@ resetBtn.addEventListener("click", () => {
 });
 
 // ---------- GPS + Relativität ----------
-
 if ("geolocation" in navigator) {
     navigator.geolocation.watchPosition(position => {
 
         const timestamp = position.timestamp;
-        const speedMS = position.coords.speed || 0; // m/s
+        // Wenn speed = 0 oder null, nehmen wir minimale Bewegung 1.4 km/h = 0.388 m/s
+        let speedMS = position.coords.speed;
+        if (speedMS === null || speedMS === 0) speedMS = 0.388;
+
         const speedKMH = speedMS * 3.6;
 
         const v = speedMS;
